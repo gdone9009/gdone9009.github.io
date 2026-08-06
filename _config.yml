@@ -1,6 +1,6 @@
-# Disable liquid rendering for all files to prevent Jekyll build errors
-render_with_liquid: false
-
-exclude:
-  - "*.py"
-  - cbt_raw.html
+theme: null
+include:
+  - index.html
+  - app.js
+  - styles.css
+  - questions.json
