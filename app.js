@@ -8,6 +8,8 @@
 
   // State Store
   const state = {
+    allExamRounds: {},      // { "1": [], "2": [], "3": [], "4": [] }
+    currentRound: 1,        // 1..4
     questions: [],
     userAnswers: {},       // { qId: optionNo (1..4) }
     bookmarks: new Set(),   // Set of qIds
@@ -40,8 +42,8 @@
   // Initialize App
   document.addEventListener('DOMContentLoaded', async () => {
     cacheDOMElements();
-    loadLocalStorageState();
     await fetchQuestions();
+    loadLocalStorageState();
     setupEventListeners();
     setupKeyboardShortcuts();
     startTimer();
@@ -50,6 +52,7 @@
   });
 
   function cacheDOMElements() {
+    el.examRoundSelect = document.getElementById('exam-round-select');
     el.questionsList = document.getElementById('questions-list');
     el.omrContainer = document.getElementById('omr-list-container');
     el.timerDisplay = document.getElementById('timer-display');
@@ -111,7 +114,13 @@
     try {
       const res = await fetch('questions.json');
       if (!res.ok) throw new Error('Failed to load questions.json');
-      state.questions = await res.json();
+      const data = await res.json();
+      state.allExamRounds = data;
+      if (Array.isArray(data)) {
+        state.questions = data;
+      } else {
+        state.questions = data[state.currentRound] || data["1"] || [];
+      }
     } catch (err) {
       console.error('Error fetching questions:', err);
       el.questionsList.innerHTML = `<div class="p-6 bg-rose-50 text-rose-700 rounded-xl">문제를 불러오는 데 실패했습니다: ${err.message}</div>`;
@@ -122,6 +131,7 @@
   function saveLocalStorageState() {
     try {
       const data = {
+        currentRound: state.currentRound,
         userAnswers: state.userAnswers,
         bookmarks: Array.from(state.bookmarks),
         isSubmitted: state.isSubmitted,
@@ -136,6 +146,12 @@
       const saved = localStorage.getItem('cbt_exam_state');
       if (saved) {
         const parsed = JSON.parse(saved);
+        if (parsed.currentRound) {
+          state.currentRound = parsed.currentRound;
+          if (state.allExamRounds && state.allExamRounds[state.currentRound]) {
+            state.questions = state.allExamRounds[state.currentRound];
+          }
+        }
         state.userAnswers = parsed.userAnswers || {};
         state.bookmarks = new Set(parsed.bookmarks || []);
         state.isSubmitted = parsed.isSubmitted || false;
@@ -171,6 +187,26 @@
 
   // Event Listeners
   function setupEventListeners() {
+    // Round Selector Listener
+    if (el.examRoundSelect) {
+      el.examRoundSelect.value = String(state.currentRound);
+      el.examRoundSelect.addEventListener('change', (e) => {
+        const roundVal = e.target.value;
+        state.currentRound = parseInt(roundVal);
+        if (state.allExamRounds && state.allExamRounds[roundVal]) {
+          state.questions = state.allExamRounds[roundVal];
+          state.userAnswers = {};
+          state.bookmarks.clear();
+          state.isSubmitted = false;
+          state.timerSeconds = 120 * 60;
+          state.currentPage = 1;
+          state.reviewFilter = 'all';
+          saveLocalStorageState();
+          renderAll();
+        }
+      });
+    }
+
     // Timer toggle
     el.timerToggleBtn.addEventListener('click', () => {
       state.isTimerRunning = !state.isTimerRunning;

@@ -62,6 +62,18 @@
         </div>
       </div>
 
+      <!-- Exam Round Selector Dropdown -->
+      <div class="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-xl border border-slate-700/80 shadow-sm">
+        <i data-lucide="layers" class="w-4 h-4 text-blue-400"></i>
+        <label for="exam-round-select" class="text-xs text-slate-300 font-medium hidden sm:inline-block">모의고사 회차:</label>
+        <select id="exam-round-select" class="bg-slate-900 text-blue-300 text-xs font-bold px-3 py-1 rounded-lg border border-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer hover:bg-slate-950 transition-colors">
+          <option value="1">📘 제1회 기출 모의고사 (영진 CBT 80문항)</option>
+          <option value="2">📗 제2회 기출 모의고사 (기출 복원 80문항)</option>
+          <option value="3">📙 제3회 기출 모의고사 (기출 복원 80문항)</option>
+          <option value="4">📕 제4회 기출 모의고사 (기출 복원 80문항)</option>
+        </select>
+      </div>
+
       <!-- Center Controls: Exam Mode & View Mode & Timer -->
       <div class="flex flex-wrap items-center gap-3">
         
