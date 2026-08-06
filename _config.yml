@@ -1,8 +1,0 @@
-render_with_liquid: false
-theme: null
-
-exclude:
-  - cbt_raw.html
-  - bigdata_analyst_exam_16pages.md
-  - "*.py"
-  - docs/
