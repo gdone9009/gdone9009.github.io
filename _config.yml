@@ -1,0 +1,11 @@
+# Jekyll configuration for GitHub Pages
+include:
+  - index.html
+  - app.js
+  - styles.css
+  - questions.json
+
+exclude:
+  - bigdata_analyst_exam_16pages.md
+  - "*.py"
+  - cbt_raw.html
