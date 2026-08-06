@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>빅데이터 분석기사 필기 CBT 모의고사 - 이기적 CBT</title>
+  
+  <!-- Pretendard Font -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Pretendard', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#2563eb',
+              600: '#1d4ed8',
+              700: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+
+  <!-- TOP HEADER / NAVBAR -->
+  <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-md border-b border-slate-800">
+    <div class="max-w-[1600px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Brand & Exam Title -->
+      <div class="flex items-center gap-3">
+        <div class="bg-gradient-to-tr from-blue-600 to-indigo-500 p-2 rounded-xl text-white shadow-inner">
+          <i data-lucide="award" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="bg-blue-500/20 text-blue-300 text-xs font-semibold px-2 py-0.5 rounded border border-blue-500/30">CBT 모의고사</span>
+            <span class="text-slate-400 text-xs">한국데이터산업진흥원 시행</span>
+          </div>
+          <h1 class="text-lg md:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            빅데이터 분석기사 필기 
+            <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700 font-normal">80문항 / 120분</span>
+          </h1>
+        </div>
+      </div>
+
+      <!-- Center Controls: Exam Mode & View Mode & Timer -->
+      <div class="flex flex-wrap items-center gap-3">
+        
+        <!-- Timer Widget -->
+        <div class="bg-slate-800/80 backdrop-blur px-3 py-1.5 rounded-lg border border-slate-700/60 flex items-center gap-2">
+          <i data-lucide="timer" class="w-4 h-4 text-blue-400 animate-pulse"></i>
+          <span class="text-xs text-slate-400 font-medium">남은 시간</span>
+          <span id="timer-display" class="font-mono text-base font-bold text-amber-400">120:00</span>
+          <button id="timer-toggle-btn" title="타이머 일시정지/재개" class="text-slate-400 hover:text-white transition-colors p-1">
+            <i data-lucide="pause-circle" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Mode Toggle Switch (Exam Mode vs Practice Mode) -->
+        <div class="bg-slate-800/80 p-1 rounded-lg border border-slate-700/60 flex items-center text-xs">
+          <button id="mode-exam-btn" class="px-3 py-1 rounded-md font-semibold transition-all bg-blue-600 text-white shadow">
+            시험 모드 (제출후 채점)
+          </button>
+          <button id="mode-practice-btn" class="px-3 py-1 rounded-md font-medium text-slate-400 hover:text-slate-200 transition-all">
+            연습 모드 (즉시 해설)
+          </button>
+        </div>
+
+        <!-- View Mode (Single vs 5-Page vs Full) -->
+        <div class="bg-slate-800/80 p-1 rounded-lg border border-slate-700/60 flex items-center text-xs">
+          <button id="view-focus-btn" class="px-2.5 py-1 rounded-md font-medium text-slate-400 hover:text-white transition-all">
+            1문제 보기
+          </button>
+          <button id="view-page-btn" class="px-2.5 py-1 rounded-md font-semibold bg-slate-700 text-white shadow transition-all">
+            페이지 보기(5개)
+          </button>
+          <button id="view-all-btn" class="px-2.5 py-1 rounded-md font-medium text-slate-400 hover:text-white transition-all">
+            전체 보기
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Action Buttons -->
+      <div class="flex items-center gap-2">
+        <button id="reset-exam-btn" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-2 rounded-lg border border-slate-700 transition-all flex items-center gap-1.5">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+          초기화
+        </button>
+        <button id="submit-exam-btn" class="text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold px-4 py-2 rounded-lg shadow-lg hover:shadow-blue-500/25 transition-all flex items-center gap-2">
+          <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+          <span>정답 제출</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- SUBJECT NAVIGATION BAR -->
+  <nav class="bg-white border-b border-slate-200 sticky top-[61px] z-30 shadow-sm">
+    <div class="max-w-[1600px] mx-auto px-4 flex items-center justify-between overflow-x-auto no-scrollbar py-2">
+      
+      <!-- Subject Tabs -->
+      <div class="flex items-center gap-1 min-w-max">
+        <button data-subject="0" class="subject-tab active-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-blue-50 text-blue-700 border border-blue-200">
+          전체 과목 (1~80)
+        </button>
+        <button data-subject="1" class="subject-tab px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all">
+          1과목: 분석기획 (1~20)
+        </button>
+        <button data-subject="2" class="subject-tab px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all">
+          2과목: 탐색 (21~40)
+        </button>
+        <button data-subject="3" class="subject-tab px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all">
+          3과목: 모델링 (41~60)
+        </button>
+        <button data-subject="4" class="subject-tab px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all">
+          4과목: 결과해석 (61~80)
+        </button>
+      </div>
+
+      <!-- Quick Stats Progress in Bar -->
+      <div class="flex items-center gap-4 text-xs min-w-max ml-4">
+        <div class="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+          <span class="text-slate-500 font-medium">풀이 진행률</span>
+          <span id="answered-count-badge" class="font-bold text-blue-600">0 / 80</span>
+          <div class="w-20 bg-slate-200 rounded-full h-1.5 overflow-hidden">
+            <div id="progress-bar-inner" class="bg-blue-600 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+        <div id="bookmark-count-badge" class="hidden sm:flex items-center gap-1 text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 font-medium">
+          <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i>
+          <span>북마크 <strong id="bookmark-count-num">0</strong>개</span>
+        </div>
+      </div>
+
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    
+    <!-- LEFT QUESTIONS DISPLAY AREA (cols 8 or 9) -->
+    <section id="questions-section" class="lg:col-span-8 xl:col-span-9 space-y-6">
+      
+      <!-- Page Navigation Banner (When in Page Mode) -->
+      <div id="page-nav-banner" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="bg-slate-900 text-white text-xs font-bold px-2.5 py-1 rounded-md" id="current-page-badge">페이지 1 / 16</span>
+          <h2 class="text-sm font-bold text-slate-800" id="current-page-title">제1과목 빅데이터 분석기획 (Q01 ~ Q05)</h2>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <button id="prev-page-btn" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i> 이전 페이지
+          </button>
+          <button id="next-page-btn" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed">
+            다음 페이지 <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Post-Submission Result Banner (Hidden initially) -->
+      <div id="result-banner" class="hidden bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-6 rounded-2xl shadow-xl border border-indigo-950/50 relative overflow-hidden">
+        <div class="relative z-10 flex flex-wrap items-center justify-between gap-6">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span id="pass-fail-badge" class="px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
+                합격 (PASS)
+              </span>
+              <span class="text-xs text-slate-400">모의고사 채점 결과</span>
+            </div>
+            <h2 class="text-2xl font-black text-white tracking-tight flex items-baseline gap-2">
+              총점 <span id="banner-total-score" class="text-3xl text-amber-400 font-extrabold">85점</span> 
+              <span class="text-sm font-normal text-slate-300">(100점 만점 / 80문항 중 <span id="banner-correct-count" class="text-emerald-400 font-bold">68문항</span> 정답)</span>
+            </h2>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button id="show-score-modal-btn" class="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-2.5 rounded-xl backdrop-blur border border-white/20 transition-all flex items-center gap-1.5">
+              <i data-lucide="bar-chart-3" class="w-4 h-4"></i> 과목별 상세 성적표 보기
+            </button>
+            <button id="filter-wrong-btn" class="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg transition-all flex items-center gap-1.5">
+              <i data-lucide="x-circle" class="w-4 h-4"></i> 틀린 문제만 모아보기
+            </button>
+            <button id="filter-all-review-btn" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg transition-all flex items-center gap-1.5">
+              <i data-lucide="list-checks" class="w-4 h-4"></i> 전체 해설 보기
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUESTIONS CONTAINER (Dynamically Populated by JavaScript) -->
+      <div id="questions-list" class="space-y-6">
+        <!-- Question items rendered here -->
+      </div>
+
+      <!-- Bottom Page Navigation -->
+      <div id="bottom-page-nav" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <button id="bottom-prev-btn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-lg transition-all flex items-center gap-1.5">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> 이전
+        </button>
+        
+        <span class="text-xs text-slate-500 font-medium" id="bottom-page-indicator">1 / 16 페이지</span>
+
+        <button id="bottom-next-btn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg shadow transition-all flex items-center gap-1.5">
+          다음 <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- RIGHT SIDEBAR: OMR ANSWER SHEET (cols 4 or 3) -->
+    <aside class="lg:col-span-4 xl:col-span-3 sticky top-[125px] space-y-4">
+      
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-md p-4 space-y-4">
+        
+        <!-- OMR Sheet Header -->
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2">
+            <i data-lucide="edit-3" class="w-5 h-5 text-blue-600"></i>
+            <h2 class="font-bold text-slate-900 text-base">OMR 답안지</h2>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-semibold border border-slate-200">
+            총 80문항
+          </span>
+        </div>
+
+        <!-- Legend / Status Guide -->
+        <div class="grid grid-cols-4 gap-1 text-[11px] text-slate-500 font-medium text-center bg-slate-50 p-2 rounded-lg border border-slate-100">
+          <div class="flex items-center justify-center gap-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span> 미풀이
+          </div>
+          <div class="flex items-center justify-center gap-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span> 풀이완료
+          </div>
+          <div class="flex items-center justify-center gap-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> 북마크
+          </div>
+          <div class="flex items-center justify-center gap-1">
+            <span class="w-2.5 h-2.5 rounded-full border-2 border-blue-600"></span> 현재위치
+          </div>
+        </div>
+
+        <!-- Filter OMR by Subject -->
+        <div class="flex items-center gap-1 text-xs">
+          <button data-omr-filter="all" class="omr-filter-btn active-omr-filter flex-1 py-1 bg-blue-600 text-white font-bold rounded">
+            전체
+          </button>
+          <button data-omr-filter="1" class="omr-filter-btn flex-1 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded">
+            1과목
+          </button>
+          <button data-omr-filter="2" class="omr-filter-btn flex-1 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded">
+            2과목
+          </button>
+          <button data-omr-filter="3" class="omr-filter-btn flex-1 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded">
+            3과목
+          </button>
+          <button data-omr-filter="4" class="omr-filter-btn flex-1 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded">
+            4과목
+          </button>
+        </div>
+
+        <!-- OMR Question Rows (Scrollable Container) -->
+        <div id="omr-list-container" class="max-h-[500px] overflow-y-auto pr-1 space-y-1.5 custom-scrollbar">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Submit Button in Sidebar -->
+        <div class="pt-2 border-t border-slate-100 space-y-2">
+          <button id="sidebar-submit-btn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2">
+            <i data-lucide="send" class="w-4 h-4"></i>
+            <span>답안 최종 제출하기</span>
+          </button>
+          <p class="text-[11px] text-slate-400 text-center">제출 후 과목별 성적표 및 자세한 해설이 제공됩니다.</p>
+        </div>
+
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- SCORE & REPORT MODAL -->
+  <div id="score-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-100 flex flex-col">
+      
+      <!-- Modal Header -->
+      <div class="bg-slate-900 text-white p-6 rounded-t-3xl flex items-center justify-between sticky top-0 z-10">
+        <div class="flex items-center gap-3">
+          <div class="bg-blue-600 p-2.5 rounded-2xl">
+            <i data-lucide="trophy" class="w-6 h-6 text-amber-300"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-white">모의고사 성적 결과 리포트</h2>
+            <p class="text-xs text-slate-400">빅데이터 분석기사 필기시험 채점 완료</p>
+          </div>
+        </div>
+        <button id="close-score-modal-btn" class="text-slate-400 hover:text-white p-2 rounded-full hover:bg-slate-800 transition-colors">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 space-y-6 flex-1">
+        
+        <!-- Score Summary Box -->
+        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 text-center relative overflow-hidden">
+          <div class="inline-block px-3 py-1 rounded-full text-xs font-bold mb-3 uppercase tracking-wider" id="modal-pass-tag">
+            합격 기준 통과
+          </div>
+
+          <div class="flex items-baseline justify-center gap-2">
+            <span class="text-5xl font-black text-slate-900" id="modal-total-score">85.0</span>
+            <span class="text-lg font-bold text-slate-500">/ 100점</span>
+          </div>
+
+          <p class="text-xs text-slate-500 mt-2">
+            총 80문항 중 <strong id="modal-correct-count" class="text-blue-600">68개</strong> 정답 (정답률 <span id="modal-accuracy-rate">85%</span>)
+          </p>
+        </div>
+
+        <!-- Subject Scores Breakdown -->
+        <div class="space-y-4">
+          <h3 class="text-sm font-bold text-slate-800 flex items-center justify-between">
+            <span>과목별 성적 및 과락 여부</span>
+            <span class="text-xs text-slate-400 font-normal">* 각 과목 40점 미만 시 과락 불합격</span>
+          </h3>
+
+          <div class="space-y-3" id="modal-subject-list">
+            <!-- Subject Score Items rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Exam Guide Alert -->
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs text-blue-900 flex items-start gap-3">
+          <i data-lucide="info" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
+          <div>
+            <strong class="font-bold block mb-0.5">합격 판정 기준 안내</strong>
+            <p class="text-blue-700 leading-relaxed">
+              빅데이터 분석기사 필기 시험은 전 과목 평균 60점 이상(총점 60점 이상)이고, 매 과목 40점 이상을 획득해야 최종 합격입니다.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-slate-50 px-6 py-4 rounded-b-3xl border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+        <button id="modal-review-wrong-btn" class="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5">
+          <i data-lucide="alert-triangle" class="w-4 h-4"></i> 오답 문제만 확인하기
+        </button>
+
+        <div class="flex items-center gap-2">
+          <button id="modal-review-all-btn" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5">
+            <i data-lucide="book-open" class="w-4 h-4"></i> 전체 해설 보기
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- UNANSWERED WARNING CONFIRMATION MODAL -->
+  <div id="unanswered-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-100 text-center space-y-4">
+      <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto">
+        <i data-lucide="alert-circle" class="w-7 h-7"></i>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-bold text-slate-900">미답안 문항이 존재합니다!</h3>
+        <p class="text-xs text-slate-500 mt-1" id="unanswered-modal-msg">
+          풀지 않은 문제 <strong class="text-amber-600 font-bold" id="unanswered-count-num">5개</strong>가 있습니다. 이대로 정답을 제출하시겠습니까?
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3 pt-2">
+        <button id="cancel-submit-btn" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all">
+          계속 풀기
+        </button>
+        <button id="confirm-submit-btn" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow transition-all">
+          제출하기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION JAVASCRIPT -->
+  <script src="app.js"></script>
+</body>
+</html>
