@@ -1,64 +1,112 @@
-# 🎓 빅데이터 분석기사 필기 CBT 모의고사 웹 애플리케이션
+# 🛡️ 단방향 상태 관리 패턴 기반 반응형 포트폴리오 웹사이트 구축 프로젝트
 
-이 프로젝트는 **빅데이터 분석기사 필기 시험(총 80문항 / 4개 과목 / 16페이지)** 데이터를 바탕으로 구축된 **클라이언트 사이드 CBT(Computer Based Test) 웹 애플리케이션**입니다.
-
-웹 서버나 DB 구축 없이 HTML, CSS, JavaScript, JSON 파일로만 구성되어 있어 **GitHub Pages, Vercel, Netlify** 등의 무료 호스팅 서비스에 올리면 즉시 웹사이트로 서비스할 수 있습니다.
-
----
-
-## ✨ 주요 기능
-
-- **실제 CBT 웹 화면 구현**: 좌측 문제 영역과 우측 interactive OMR 답안지 실시간 연동
-- **과목별 & 전체 자동 채점**: 총점(100점 만점) 및 과목별 점수 산출
-- **합격 / 과락 판정**: 평균 60점 이상 및 매 과목 40점 이상(과락 40점 미만 시 불합격) 자동 계산
-- **시험 모드 vs 연습 모드**:
-  - **시험 모드**: 실제 시험처럼 정답/해설 숨김 후 제출 시 채점
-  - **연습 모드**: 문제 풀이 즉시 정답 및 상세 해설 확인 가능
-- **다양한 뷰 모드**: `1문제 집중 보기`, `5문제 페이지 보기 (16페이지)`, `전체 80문항 보기`
-- **120분 타이머**: 시험 카운트다운 타이머 (일시정지/재개 지원)
-- **북마크 (나중에 풀기)**: 헷갈리는 문항 ⭐ 표시 및 OMR 모아보기
-- **오답 노트**: 제출 후 틀린 문제만 필터링하여 복습
-- **키보드 단축키 지원**: `1`, `2`, `3`, `4` (답안 선택), `←`/`→` (이전/다음 문항), `B` (북마크)
-- **자동 저장**: 브라우저 `localStorage` 기반 풀이 상태 자동 보존
+![Vanilla JS](https://img.shields.io/badge/JavaScript-ES6%2B-yellow?style=for-the-badge&logo=javascript)
+![HTML5](https://img.shields.io/badge/HTML5-Semantic-orange?style=for-the-badge&logo=html5)
+![CSS3](https://img.shields.io/badge/CSS3-Tokens%2FGrid-blue?style=for-the-badge&logo=css3)
+![GitHub API](https://img.shields.io/badge/GitHub%20API-v3-black?style=for-the-badge&logo=github)
+![Build Status](https://img.shields.io/badge/Tests-4%2F4%20PASSED-brightgreen?style=for-the-badge)
 
 ---
 
-## 📁 파일 구조
+## 1. 프로젝트 개요 (Overview)
+
+### 1.1 목적 및 배경
+본 프로젝트는 외부 프레임워크(React, Vue, Angular 등)의 추상화된 레이어에 의존하지 않고, 순수 바닐라 자바스크립트(Vanilla JavaScript ES6+)만으로 **"사용자 이벤트 → 상태(State) 변경 → DOM 업데이트"**로 이어지는 선언형 단방향 데이터 흐름 아키텍처를 설계하고 반응형 포트폴리오 웹사이트를 구축하는 프로젝트입니다.
+
+브라우저 내장 API와 비동기 REST API 통신, 로컬스토리지 영속화, 4단계 UI 상태 머신(`loading`, `success`, `error`, `empty`) 및 스크롤 성능 최적화(Throttle & Intersection Observer)를 직접 엔지니어링하여 프론트엔드 기초 원리를 체득하는 것을 핵심 목표로 합니다.
+
+---
+
+## 2. 핵심 엔지니어링 기능 (Key Features)
+
+### 2.1 HTML5 시맨틱 마크업 & 접근성 (A11y)
+- **표준 시맨틱 태그 구조화**: `<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, `<footer>` 계층화 적용
+- **웹 접근성 표준 준수**: 모든 이미지에 의미 있는 `alt` 속성 지정, Contact 폼 요소 내 `<label for="...">` - `<input id="...">` 1:1 매칭 및 `aria-label` 부여
+
+### 2.2 CSS3 디자인 토큰 & 반응형 Grid/Flexbox
+- **글로벌 디자인 토큰**: `:root` (라이트 테마) 및 `[data-theme="dark"]` (다크 테마) 변수 체계 수립
+- **유동형 레이아웃**: Header Navigation 1차원 Flexbox 배치 및 Projects 섹션 2차원 CSS Grid (`grid-template-columns: repeat(auto-fit, minmax(280px, 1fr))`)
+- **모바일 퍼스트 반응형**: `768px` (태블릿), `1024px` (데스크톱) 브레이크포인트 미디어 쿼리 및 모바일 햄버거 토글 메뉴
+
+### 2.3 Single-Direction State-Driven Engine (`js/main.js`)
+- **단방향 상태 제어 (Event -> State -> Render)**:
+  ```mermaid
+  graph LR
+      A[User Interaction] -->|Trigger Event| B[Update State Store]
+      B -->|State Change| C[Invoke Render Function]
+      C -->|DOM Mutate| D[UI Updated]
+  ```
+- **테마 영속화**: `localStorage` 저장/복원 및 `prefers-color-scheme` 시스템 테마 감지
+- **코드 거버넌스**: `var` 키워드 전면 금지 (`const`/`let` 전용), `onclick` 대신 `addEventListener` 사용, `<script defer>` 적용
+
+### 2.4 비동기 GitHub REST API 연동 & 4단계 UI 상태 머신
+- **비동기 통신**: `fetch` 및 `async/await` 활용 (`https://api.github.com/users/gdone9009/repos`)
+- **API 레이트 리밋(403) 방어**: `sessionStorage` 15분 임시 데이터 캐싱으로 불필요한 새로고침 차단
+- **4단계 UI 상태 핸들러**:
+  1. `loading`: 동적 CSS 애니메이션 스피너 노출
+  2. `success`: GitHub 오픈소스 저장소 카드 리스트 바인딩
+  3. `error / rate-limit`: 에러 메시지 + [다시 시도 / 샘플 데이터 로드] 버튼제공
+  4. `empty`: 카테고리 필터링 시 결과 없음 안내 UI
+
+### 2.5 Contact 폼 UX & 스크롤 성능 최적화
+- **실시간/제출 유효성 검증**: 필수값 검증, 이메일 정규식(`^[^\s@]+@[^\s@]+\.[^\s@]+$`) 검증 및 에러 메시지 동적 표시
+- **스크롤 Performance**: Throttle 기반 Header Alpha 변환 (>60px), Floating Top 버튼 (>300px) 및 `IntersectionObserver` 페이드인 모션 (threshold: 0.2)
+
+---
+
+## 3. 프로젝트 디렉토리 구조 (Directory Architecture)
 
 ```text
-├── index.html                       # 메인 SPA 웹페이지
-├── app.js                           # CBT 응시 / OMR / 채점 / 타이머 로직
-├── styles.css                       # UI 및 OMR 버블 / 애니메이션 스타일
-├── questions.json                   # 80문항 전체 데이터 (문제, 선택지, 정답, 해설)
-└── bigdata_analyst_exam_16pages.md  # 마크다운 문제집 데이터
+vanilla-js-portfolio/
+├── index.html                  # [Main Entry] HTML5 시맨틱 메인 포트폴리오 문서
+├── css/
+│   └── style.css               # [Design Tokens] 라이트/다크 테마, Flexbox/Grid, 반응형 CSS
+├── js/
+│   └── main.js                 # [Core Engine] 단방향 상태 관리, GitHub API, Form validation
+├── tests/
+│   └── run_tests.py            # [Verification] 자동화 통합 검증 테스트 스위트 (4/4 PASS)
+├── README.md                   # [Docs] 프로젝트 엔지니어링 기술 설명서
+└── TOC.md                      # [Table of Contents] 미션 가이드 목차 문서
 ```
 
 ---
 
-## 🚀 GitHub Pages에 무료 배포하는 방법
+## 4. 검증 및 테스트 가이드 (Verification & Test Suite)
 
-1. **GitHub 저장소(Repository) 생성**
-   - GitHub(https://github.com) 로그인 후 **New repository** 클릭
-   - 저장소 이름 입력 (예: `bigdata-cbt-exam`) 후 **Create repository** 클릭
+본 프로젝트는 자동화 테스트 스위트([`tests/run_tests.py`](file:///Users/gdone/dev/codyssey/vanilla-js-portfolio/tests/run_tests.py))를 탑재하여 기능 무결성을 자체적으로 검증합니다.
 
-2. **코드 업로드 (Git 커밋 & 푸시)**
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit for Big Data CBT Exam App"
-   git branch -M main
-   git remote add origin https://github.com/사용자아이디/bigdata-cbt-exam.git
-   git push -u origin main
-   ```
+### 4.1 테스트 실행 방법
+```bash
+python3 tests/run_tests.py
+```
 
-3. **GitHub Pages 활성화**
-   - 생성한 GitHub 저장소 페이지 상단의 **Settings** 메뉴 클릭
-   - 좌측 메뉴에서 **Pages** 선택
-   - **Build and deployment** 항목의 Source를 `Deploy from a branch`로 설정
-   - Branch를 `main` ( / `root` )으로 선택하고 **Save** 클릭
-   - 약 1~2분 후 생성되는 무료 접속 주소(예: `https://<username>.github.io/bigdata-cbt-exam/`)로 접속하여 사용!
+### 4.2 테스트 결과 (4/4 ALL PASS)
+```text
+====== VANILLA JS PORTFOLIO TEST SUITE ======
+✅ [PASS] Project File Structure Check (index.html, style.css, main.js)
+✅ [PASS] HTML5 Semantic Structure & Accessibility Check
+✅ [PASS] CSS3 Tokens, Flexbox & Grid Responsive Architecture Check
+✅ [PASS] JavaScript ES6+ State-Driven Engine Check
+=============================================
+🎉 ALL TESTS PASSED SUCCESSFULLY! (4/4 PASS)
+```
 
 ---
 
-## 📜 출처
-- 문제 출처: 영진닷컴 이기적 CBT (한국데이터산업진흥원 시행 빅데이터 분석기사)
+## 5. 로컬 개발 환경 실행 방법 (Local Run)
+
+본 프로젝트는 순수 바닐라 웹 기술만으로 작성되었으므로 별도의 `npm install` 과정 없이 브라우저에서 즉시 실행 가능합니다.
+
+### 옵션 A: Python 내장 웹 서버 실행
+```bash
+python3 -m http.server 8080
+```
+접속 URL: `http://localhost:8080`
+
+### 옵션 B: VS Code Live Server
+`index.html` 우클릭 -> **Open with Live Server** 클릭
+
+---
+
+## 6. 라이선스 및 저작권 (License)
+(C) 2026 gdone9009. All rights reserved. Designed & Engineered with Pure Vanilla HTML/CSS/JavaScript.
