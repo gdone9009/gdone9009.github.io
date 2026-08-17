@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>도서 관리 시스템 | SQL 데이터베이스 웹 서비스 & 학습 포털</title>
+  <meta name="description" content="AI/SW 기초 미션 5-1: 표준 SQL 및 SQLite 기반 도서 관리 시스템(3NF)의 대화형 웹 서비스, SQL 스튜디오, ERD 뷰어, 비즈니스 대시보드 및 학습 매뉴얼">
+  
+  <!-- Modern Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- SQL.js WebAssembly Library from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/sql-wasm.js"></script>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <div class="container nav-bar">
+      <a href="#library-app" class="brand">
+        <span>📚 도서 관리 DB 시스템</span>
+        <span class="brand-badge">Mission 5-1</span>
+      </a>
+
+      <ul class="nav-menu">
+        <li><a href="#library-app" class="nav-link active" data-tab="library-app">📖 도서관 앱</a></li>
+        <li><a href="#sql-studio" class="nav-link" data-tab="sql-studio">⚡ SQL 스튜디오 (16선)</a></li>
+        <li><a href="#dashboard" class="nav-link" data-tab="dashboard">📊 비즈니스 대시보드</a></li>
+        <li><a href="#erd-schema" class="nav-link" data-tab="erd-schema">🏗️ ERD & 스키마</a></li>
+        <li><a href="#manual" class="nav-link" data-tab="manual">📘 학습 매뉴얼 & Q&A</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button id="btn-theme-toggle" class="btn-icon" title="다크/라이트 모드 전환">
+          <span id="theme-icon">🌙</span>
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="handleResetDB()" title="초기 데이터 복원">
+          🔄 DB 초기화
+        </button>
+        <a href="https://github.com/gdone9009/sql-db" target="_blank" class="btn btn-primary btn-sm">
+          ⭐ GitHub
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Header & Global Stats -->
+  <section class="hero-banner">
+    <div class="container">
+      <div class="hero-content">
+        <h1 class="hero-title">정보를 깔끔하게 정리하는 디지털 서랍장 (SQL DB)</h1>
+        <p class="hero-desc">
+          브라우저 내 WebAssembly SQLite 3 엔진을 통해 제3정규형(3NF) 스키마, 참조 무결성(PK/FK), 16개 핵심 쿼리, 실시간 대여 트랜잭션을 직접 체험하고 학습할 수 있는 인터랙티브 웹 포털입니다.
+        </p>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-info">
+              <span id="stat-books" class="stat-value">10</span>
+              <span class="stat-label">보유 도서 (books)</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">👤</div>
+            <div class="stat-info">
+              <span id="stat-members" class="stat-value">10</span>
+              <span class="stat-label">등록 회원 (members)</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🏷️</div>
+            <div class="stat-info">
+              <span id="stat-categories" class="stat-value">10</span>
+              <span class="stat-label">도서 분류 (categories)</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📑</div>
+            <div class="stat-info">
+              <span id="stat-rentals" class="stat-value">12</span>
+              <span class="stat-label">대여 이력 (rentals)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main View Router Container -->
+  <main class="container">
+
+    <!-- ==================================================================== -->
+    <!-- TAB 1: Library Web Application -->
+    <!-- ==================================================================== -->
+    <div id="library-app" class="tab-pane active">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">📖 도서 관리 및 실시간 대여 서비스</h2>
+          <button class="btn btn-primary btn-sm" onclick="openAddMemberModal()">
+            ➕ 신규 회원 등록
+          </button>
+        </div>
+
+        <div class="filter-bar">
+          <div class="search-box">
+            <span>🔍</span>
+            <input type="text" id="search-book" placeholder="도서명 또는 저자명으로 실시간 검색...">
+          </div>
+          <select id="filter-category" class="select-box">
+            <option value="">전체 카테고리</option>
+          </select>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>도서 제목</th>
+                <th>저자</th>
+                <th>카테고리</th>
+                <th>정가</th>
+                <th>대여 상태</th>
+                <th>대여 액션</th>
+              </tr>
+            </thead>
+            <tbody id="books-table-body">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Recent Rentals Live List -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">📑 최근 대여 트랜잭션 이력 (rentals)</h2>
+          <span class="badge badge-primary">실시간 N:M 관계 결합</span>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>대여 ID</th>
+                <th>회원명</th>
+                <th>도서 제목</th>
+                <th>카테고리</th>
+                <th>대여일자</th>
+                <th>반납 처리</th>
+              </tr>
+            </thead>
+            <tbody id="rentals-table-body">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================================== -->
+    <!-- TAB 2: Interactive SQL Studio -->
+    <!-- ==================================================================== -->
+    <div id="sql-studio" class="tab-pane">
+      <div class="sql-studio-grid">
+        
+        <!-- Left: Preset Queries -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">⚡ 쿼리 프리셋 목록</h3>
+          </div>
+          <div class="preset-list" id="preset-query-list">
+            <!-- Preset items injected dynamically -->
+          </div>
+        </div>
+
+        <!-- Right: SQL Console & Result -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 id="current-query-title" class="card-title">[Q01] 전체 도서 목록 제목순 정렬 상위 5권</h3>
+                <p id="current-query-desc" style="font-size: 0.85rem; color: var(--text-muted);">ORDER BY와 LIMIT를 활용한 도서 가나다순 페이징 조회</p>
+              </div>
+            </div>
+
+            <div class="sql-editor-container">
+              <div class="sql-editor-box">
+                <textarea id="custom-sql-input" class="sql-textarea" placeholder="SQL 쿼리를 입력하세요..."></textarea>
+                <div class="sql-toolbar">
+                  <span id="sql-exec-info" class="query-execution-info">준비됨</span>
+                  <button id="btn-run-sql" class="btn btn-primary btn-sm">
+                    ▶️ 쿼리 실행 (Run SQL)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Query Output Result Table -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">📋 쿼리 실행 결과 (Data Grid)</h3>
+            </div>
+            <div id="sql-result-container">
+              <!-- Table rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================================================================== -->
+    <!-- TAB 3: Business Intelligence Dashboard -->
+    <!-- ==================================================================== -->
+    <div id="dashboard" class="tab-pane">
+      <div class="dashboard-grid">
+        
+        <!-- Metric 1: Top 3 Books -->
+        <div class="chart-card">
+          <div class="card-header">
+            <h3 class="card-title">🏆 가장 인기 있는 도서 TOP 3</h3>
+            <span class="badge badge-primary">보너스 3-1</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+            대여 빈도수(COUNT) 기준 가장 많이 대출된 도서 순위입니다.
+          </p>
+          <div id="chart-top-books"></div>
+        </div>
+
+        <!-- Metric 2: Category Asset Value -->
+        <div class="chart-card">
+          <div class="card-header">
+            <h3 class="card-title">💰 카테고리별 도서 자산 총액</h3>
+            <span class="badge badge-success">보너스 3-2</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+            도서 정가(SUM) 기준 카테고리별 재고 자산 건전성입니다.
+          </p>
+          <div id="chart-category-assets"></div>
+        </div>
+
+        <!-- Metric 3: Active Member Participation -->
+        <div class="chart-card">
+          <div class="card-header">
+            <h3 class="card-title">📈 회원 대여 활성 참여율</h3>
+            <span class="badge badge-warning">보너스 3-3</span>
+          </div>
+          <div class="gauge-circle">
+            <div id="gauge-participation-val" class="gauge-value">90.0%</div>
+            <div id="gauge-participation-sub" class="gauge-subtext">전체 10명 중 9명 대여 활동</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bonus 2: FK Integrity Violation Simulator -->
+      <div class="card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+          <h3 class="card-title">🛡️ 보너스 2: 외래키(FK) 참조 무결성 위반 시뮬레이터</h3>
+          <button class="btn btn-danger btn-sm" onclick="runBonus2Simulator()">
+            🚨 999번 회원 대여 삽입 시도
+          </button>
+        </div>
+        <p style="font-size: 0.88rem; color: var(--text-secondary);">
+          존재하지 않는 회원 번호(<code>member_id = 999</code>)로 대여 레코드 삽입을 시도하여, 관계형 DB의 <strong>참조 무결성 제약조건</strong>이 어떻게 비정상 데이터를 차단하는지 실시간으로 검증합니다.
+        </p>
+        <div id="bonus2-result-box"></div>
+      </div>
+    </div>
+
+    <!-- ==================================================================== -->
+    <!-- TAB 4: ERD & Schema Viewer -->
+    <!-- ==================================================================== -->
+    <div id="erd-schema" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🏗️ 데이터베이스 모델링 및 ERD 관계도</h2>
+          <span class="badge badge-primary">제3정규형 (3NF)</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+          
+          <div class="card" style="border-top: 4px solid var(--accent-primary); margin-bottom:0;">
+            <h4 style="color:var(--accent-primary); margin-bottom:0.5rem;">👤 members (회원)</h4>
+            <ul style="font-size:0.85rem; list-style:none; line-height:1.8; color:var(--text-secondary);">
+              <li>🔑 <strong>member_id</strong>: INTEGER (PK)</li>
+              <li>📌 <strong>name</strong>: TEXT (NOT NULL)</li>
+              <li>✨ <strong>email</strong>: TEXT (UNIQUE, NOT NULL)</li>
+              <li>📞 <strong>phone</strong>: TEXT</li>
+              <li>📅 <strong>join_date</strong>: DATE (DEFAULT today)</li>
+            </ul>
+          </div>
+
+          <div class="card" style="border-top: 4px solid var(--success); margin-bottom:0;">
+            <h4 style="color:var(--success); margin-bottom:0.5rem;">🏷️ categories (카테고리)</h4>
+            <ul style="font-size:0.85rem; list-style:none; line-height:1.8; color:var(--text-secondary);">
+              <li>🔑 <strong>category_id</strong>: INTEGER (PK)</li>
+              <li>✨ <strong>category_name</strong>: TEXT (UNIQUE, NOT NULL)</li>
+            </ul>
+          </div>
+
+          <div class="card" style="border-top: 4px solid var(--warning); margin-bottom:0;">
+            <h4 style="color:var(--warning); margin-bottom:0.5rem;">📚 books (도서)</h4>
+            <ul style="font-size:0.85rem; list-style:none; line-height:1.8; color:var(--text-secondary);">
+              <li>🔑 <strong>book_id</strong>: INTEGER (PK)</li>
+              <li>📌 <strong>title</strong>: TEXT (NOT NULL)</li>
+              <li>✍️ <strong>author</strong>: TEXT (NOT NULL)</li>
+              <li>💰 <strong>price</strong>: INTEGER (NOT NULL)</li>
+              <li>🔗 <strong>category_id</strong>: INTEGER (FK ➔ categories)</li>
+            </ul>
+          </div>
+
+          <div class="card" style="border-top: 4px solid var(--danger); margin-bottom:0;">
+            <h4 style="color:var(--danger); margin-bottom:0.5rem;">📑 rentals (대여 이력)</h4>
+            <ul style="font-size:0.85rem; list-style:none; line-height:1.8; color:var(--text-secondary);">
+              <li>🔑 <strong>rental_id</strong>: INTEGER (PK)</li>
+              <li>🔗 <strong>member_id</strong>: INTEGER (FK ➔ members)</li>
+              <li>🔗 <strong>book_id</strong>: INTEGER (FK ➔ books)</li>
+              <li>📅 <strong>rental_date</strong>: DATE (DEFAULT today)</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div class="callout">
+          <strong>💡 1:N 관계 해설:</strong><br>
+          • <code>categories (1) : books (N)</code> — 하나의 카테고리에는 여러 권의 도서가 포함됩니다.<br>
+          • <code>members (1) : rentals (N)</code> — 한 명의 회원은 여러 번 대여할 수 있습니다.<br>
+          • <code>books (1) : rentals (N)</code> — 한 권의 도서는 시간에 따라 여러 번 대여될 수 있습니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================================== -->
+    <!-- TAB 5: Educational Manual & Q&A -->
+    <!-- ==================================================================== -->
+    <div id="manual" class="tab-pane">
+      <div class="card">
+        
+        <div class="doc-section">
+          <h2>📘 관계형 데이터베이스 기초 학습 매뉴얼</h2>
+          
+          <h3>1. 엑셀(Excel)과 데이터베이스(RDBMS)의 본질적 차이</h3>
+          <p>
+            엑셀은 데이터를 자유롭게 적는 스프레드시트이지만, 데이터가 커질수록 <strong>중복 입력</strong>과 <strong>참조 오류</strong>가 발생하기 쉽습니다.  
+            반면 관계형 데이터베이스(RDBMS)는 다음과 같은 핵심 장점을 가집니다:
+          </p>
+          <ul>
+            <li><strong>데이터 무결성(Integrity)</strong>: PK, FK, NOT NULL, UNIQUE 등의 규칙을 엔진 수준에서 강제합니다.</li>
+            <li><strong>동시성 제어(Concurrency)</strong>: 수백, 수천 명의 사용자가 동시에 읽고 쓸 때 데이터 충돌을 방지합니다.</li>
+            <li><strong>표준 쿼리 언어(SQL)</strong>: 대용량 데이터에서 원하는 조건의 데이터를 $O(\log N)$ 인덱스로 빠르게 조회합니다.</li>
+          </ul>
+
+          <h3>2. 제3정규형(3NF) 설계 원칙</h3>
+          <p>
+            데이터 중복에 따른 이상 현상(삽입 이상, 갱신 이상, 삭제 이상)을 방지하기 위해 도서 관리 시스템은 다음 3단계를 거쳐 4개 테이블로 분리되었습니다:
+          </p>
+          <ol>
+            <li><strong>제1정규형 (1NF)</strong>: 모든 컬럼의 값이 하나의 원자값(Atomic Value)을 갖도록 분리.</li>
+            <li><strong>제2정규형 (2NF)</strong>: 기본 키의 진부분집합에 종속되는 부분 함수 종속성 제거.</li>
+            <li><strong>제3정규형 (3NF)</strong>: 기본 키가 아닌 일반 컬럼 간의 이행적 함수 종속($X \to Y \to Z$) 제거.</li>
+          </ol>
+
+          <h3>3. 인덱스(Index)의 작동 원리와 필요성</h3>
+          <p>
+            인덱스는 책의 맨 뒤에 있는 '색인(Index)'과 같습니다.  
+            인덱스가 없으면 100만 건의 데이터를 모두 읽는 <strong>풀 테이블 스캔(Full Table Scan, $O(N)$)</strong>이 발생하지만, 
+            외래키 컬럼(<code>books.category_id</code>)에 B-Tree 인덱스를 생성하면 $O(\log N)$의 고속 검색이 가능해집니다.
+          </p>
+        </div>
+
+        <div class="doc-section">
+          <h2>💬 기술 면접 및 평가 대비 핵심 질의응답 (Q&A)</h2>
+
+          <div class="qa-card">
+            <div class="qa-q">Q1. 1:N 관계를 맺을 때 외래키(FK)는 왜 'N(자식)' 쪽에 위치해야 하나요?</div>
+            <div class="qa-a">
+              <strong>답변:</strong> 1(부모) 쪽에 외래키를 두면 한 행에 여러 개의 자식 ID를 콤마 등으로 묶어 저장해야 하므로 제1정규형(1NF, 원자값 원칙)을 위반하게 됩니다. 반면 N(자식) 쪽에 부모의 PK를 FK로 저장하면 모든 레코드가 단일 원자값을 유지하면서 자연스러운 1:N 조회가 가능해집니다.
+            </div>
+          </div>
+
+          <div class="qa-card">
+            <div class="qa-q">Q2. INNER JOIN과 LEFT JOIN의 차이는 무엇인가요?</div>
+            <div class="qa-a">
+              <strong>답변:</strong> <code>INNER JOIN</code>은 양쪽 테이블 모두에 조건이 일치하는 행만 결과로 반환합니다. 반면 <code>LEFT JOIN</code>은 왼쪽(기준) 테이블의 모든 행을 유지하며, 오른쪽 테이블에 매칭되는 데이터가 없으면 <code>NULL</code>로 채워 결과를 반환합니다. (예: 대여 이력이 없는 회원도 목록에 표시할 때 LEFT JOIN 활용)
+            </div>
+          </div>
+
+          <div class="qa-card">
+            <div class="qa-q">Q3. 보너스 1 과제에서 JOIN 방식과 서브쿼리 방식의 차이는 무엇인가요?</div>
+            <div class="qa-a">
+              <strong>답변:</strong> 가독성 측면에서 단순 스칼라 조건 치환은 서브쿼리가 직관적이지만, 대용량 RDBMS 환경에서는 옵티마이저(Optimizer)가 JOIN 조건절에 대해 인덱스 결합(Nested Loop, Hash Join)을 유연하게 수립할 수 있어 실무 대규모 쿼리에서는 JOIN 방식이 성능 면에서 우수합니다.
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Rental Action Modal -->
+  <div id="rental-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="card-header">
+        <h3 class="card-title">📖 도서 대여 신청</h3>
+        <button class="btn-icon" onclick="closeRentalModal()">✕</button>
+      </div>
+      <p style="margin-bottom:1rem; font-size:0.9rem; color:var(--text-secondary);">
+        대여 대상 도서: <strong id="modal-book-title" style="color:var(--text-primary);"></strong>
+      </p>
+      <input type="hidden" id="modal-book-id">
+      
+      <div class="form-group">
+        <label class="form-label">대여할 회원 선택 (members FK)</label>
+        <select id="modal-select-member" class="form-control"></select>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.5rem;">
+        <button class="btn btn-secondary" onclick="closeRentalModal()">취소</button>
+        <button class="btn btn-primary" onclick="submitRental()">대여 확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Member Registration Modal -->
+  <div id="member-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="card-header">
+        <h3 class="card-title">👤 신규 회원 등록</h3>
+        <button class="btn-icon" onclick="closeAddMemberModal()">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">회원 이름 (NOT NULL)</label>
+        <input type="text" id="input-member-name" class="form-control" placeholder="예: 홍길동">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">이메일 (UNIQUE NOT NULL)</label>
+        <input type="email" id="input-member-email" class="form-control" placeholder="예: gdone9009@gmail.com">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">연락처</label>
+        <input type="text" id="input-member-phone" class="form-control" placeholder="예: 010-1234-5678">
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.5rem;">
+        <button class="btn btn-secondary" onclick="closeAddMemberModal()">취소</button>
+        <button class="btn btn-primary" onclick="submitAddMember()">회원 등록</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>AI/SW 기초 미션 5-1: SQL 기반 도서 관리 시스템 (Book Management System)</p>
+      <p style="margin-top:0.25rem;">수행자: <strong>gdone9009</strong> (gdone9009@gmail.com) | GitHub Pages Live Demo</p>
+    </div>
+  </footer>
+
+  <!-- Application Logic -->
+  <script src="js/database.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
