@@ -49,7 +49,7 @@ INSERT INTO categories (category_name) VALUES
 ('예술/대중문화'), ('자연과학'), ('에세이'), ('자기계발'), ('심리학');
 
 INSERT INTO members (name, email, phone, join_date) VALUES 
-('정창석', 'js@gmail.com', '010-1234-5678', '2026-01-15'),
+('강동원', 'gdone9009@gmail.com', '010-1234-5678', '2026-01-15'),
 ('김철수', 'chul@naver.com', '010-2345-6789', '2026-02-01'),
 ('이영희', 'yh@daum.net', '010-3456-7890', '2026-02-10'),
 ('박민수', 'ms@gmail.com', '010-4567-8901', '2026-03-05'),

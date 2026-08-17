@@ -107,8 +107,8 @@ const PRESET_QUERIES = [
   {
     id: "Q14",
     cat: "수정 / 삭제",
-    title: "'정창석' 회원 연락처 정보 수정",
-    sql: "UPDATE members SET phone = '010-9999-8888' WHERE name = '정창석';",
+    title: "'강동원' 회원 연락처 정보 수정",
+    sql: "UPDATE members SET phone = '010-9999-8888' WHERE name = '강동원';",
     desc: "특정 레코드의 컬럼 값을 변경하는 UPDATE 실습"
   },
   {
