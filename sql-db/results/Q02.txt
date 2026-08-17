@@ -1,0 +1,18 @@
+쿼리 ID: Q02
+설명: 2026년 2월 이후 가입한 회원 목록 조회
+SQL:
+SELECT member_id, name, email, join_date FROM members WHERE join_date >= '2026-02-01' ORDER BY join_date ASC;
+
+실행 결과:
+member_id | name | email | join_date
+----------+------+-------+----------
+2 | 김철수 | chul@naver.com | 2026-02-01
+3 | 이영희 | yh@daum.net | 2026-02-10
+4 | 박민수 | ms@gmail.com | 2026-03-05
+5 | 최지우 | jw@naver.com | 2026-03-12
+6 | 강하늘 | sky@daum.net | 2026-04-01
+7 | 윤서준 | sj@gmail.com | 2026-04-15
+8 | 조예은 | ye@naver.com | 2026-05-02
+9 | 한결 | kg@daum.net | 2026-05-20
+10 | 임소윤 | sy@gmail.com | 2026-06-01
+(총 9개 행 조회됨)

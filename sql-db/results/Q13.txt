@@ -1,0 +1,10 @@
+쿼리 ID: Q13
+설명: 대여 이력이 한 번도 없는 미대여 도서 목록 조회 (서브쿼리 - NOT IN)
+SQL:
+SELECT book_id, title, author, price FROM books WHERE book_id NOT IN (SELECT DISTINCT book_id FROM rentals);
+
+실행 결과:
+book_id | title | author | price
+--------+-------+--------+------
+6 | 자본론 | 칼 마르크스 | 25000
+(총 1개 행 조회됨)

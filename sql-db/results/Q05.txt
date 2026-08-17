@@ -1,0 +1,19 @@
+쿼리 ID: Q05
+설명: 도서 제목과 연결된 카테고리 이름 함께 조회 (INNER JOIN)
+SQL:
+SELECT b.book_id, b.title, b.author, c.category_name FROM books b INNER JOIN categories c ON b.category_id = c.category_id ORDER BY b.book_id;
+
+실행 결과:
+book_id | title | author | category_name
+--------+-------+--------+--------------
+1 | 클린 코드 | 로버트 마틴 | IT/프로그래밍
+2 | 부자 아빠 가난한 아빠 | 로버트 기요사키 | 경제/경영
+3 | 사피엔스 | 유발 하라리 | 역사
+4 | 미움받을 용기 | 고가 후미타케 | 심리학
+5 | 파친코 | 이민진 | 소설
+6 | 자본론 | 칼 마르크스 | 경제/경영
+7 | 총 균 쇠 | 재레드 다이아몬드 | 역사
+8 | 이기적 유전자 | 리처드 도킨스 | 자연과학
+9 | 코스모스 | 칼 세이건 | 자연과학
+10 | 데미안 | 헤르만 헤세 | 소설
+(총 10개 행 조회됨)

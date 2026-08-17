@@ -1,0 +1,12 @@
+쿼리 ID: Bonus_03A
+설명: 보너스 3-1: 가장 인기 있는 도서 TOP 3 (핵심 지표 1)
+SQL:
+SELECT b.title, COUNT(r.rental_id) AS rental_count FROM books b JOIN rentals r ON b.book_id = r.book_id GROUP BY b.book_id, b.title ORDER BY rental_count DESC LIMIT 3;
+
+실행 결과:
+title | rental_count
+------+-------------
+클린 코드 | 3
+부자 아빠 가난한 아빠 | 2
+사피엔스 | 1
+(총 3개 행 조회됨)

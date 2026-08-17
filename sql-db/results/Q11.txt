@@ -1,0 +1,12 @@
+쿼리 ID: Q11
+설명: 회원별 대출 건수 집계 및 최다 대출 회원 TOP 3 (COUNT + GROUP BY)
+SQL:
+SELECT m.name AS member_name, COUNT(r.rental_id) AS total_rentals FROM members m INNER JOIN rentals r ON m.member_id = r.member_id GROUP BY m.member_id, m.name ORDER BY total_rentals DESC LIMIT 3;
+
+실행 결과:
+member_name | total_rentals
+------------+--------------
+강동원 | 3
+김철수 | 2
+이영희 | 1
+(총 3개 행 조회됨)

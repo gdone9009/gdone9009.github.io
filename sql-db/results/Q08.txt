@@ -1,0 +1,23 @@
+쿼리 ID: Q08
+설명: 모든 카테고리와 해당하는 도서 목록 조회 (LEFT JOIN)
+SQL:
+SELECT c.category_name, b.title AS book_title FROM categories c LEFT JOIN books b ON c.category_id = b.category_id ORDER BY c.category_id;
+
+실행 결과:
+category_name | book_title
+--------------+-----------
+소설 | 데미안
+소설 | 파친코
+IT/프로그래밍 | 클린 코드
+경제/경영 | 부자 아빠 가난한 아빠
+경제/경영 | 자본론
+철학 | NULL
+역사 | 사피엔스
+역사 | 총 균 쇠
+예술/대중문화 | NULL
+자연과학 | 이기적 유전자
+자연과학 | 코스모스
+에세이 | NULL
+자기계발 | NULL
+심리학 | 미움받을 용기
+(총 14개 행 조회됨)

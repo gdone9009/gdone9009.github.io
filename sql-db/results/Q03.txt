@@ -1,0 +1,11 @@
+쿼리 ID: Q03
+설명: 저자명에 '로버트'가 포함된 도서 검색
+SQL:
+SELECT book_id, title, author, price FROM books WHERE author LIKE '%로버트%';
+
+실행 결과:
+book_id | title | author | price
+--------+-------+--------+------
+1 | 클린 코드 | 로버트 마틴 | 33000
+2 | 부자 아빠 가난한 아빠 | 로버트 기요사키 | 17000
+(총 2개 행 조회됨)

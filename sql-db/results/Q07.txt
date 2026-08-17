@@ -1,0 +1,10 @@
+쿼리 ID: Q07
+설명: 'IT/프로그래밍' 카테고리에 속한 도서 조회 (INNER JOIN)
+SQL:
+SELECT b.title, b.author, b.price, c.category_name FROM books b INNER JOIN categories c ON b.category_id = c.category_id WHERE c.category_name = 'IT/프로그래밍';
+
+실행 결과:
+title | author | price | category_name
+------+--------+-------+--------------
+클린 코드 | 로버트 마틴 | 33000 | IT/프로그래밍
+(총 1개 행 조회됨)

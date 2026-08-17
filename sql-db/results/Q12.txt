@@ -1,0 +1,15 @@
+쿼리 ID: Q12
+설명: 카테고리별 도서 평균 가격 및 총 재고 가치 금액 집계 (SUM + AVG + GROUP BY)
+SQL:
+SELECT c.category_name, COUNT(b.book_id) AS book_count, ROUND(AVG(b.price), 0) AS avg_price, SUM(b.price) AS total_value FROM categories c INNER JOIN books b ON c.category_id = b.category_id GROUP BY c.category_id, c.category_name ORDER BY total_value DESC;
+
+실행 결과:
+category_name | book_count | avg_price | total_value
+--------------+------------+-----------+------------
+역사 | 2 | 25000.0 | 50000
+자연과학 | 2 | 23500.0 | 47000
+경제/경영 | 2 | 21000.0 | 42000
+IT/프로그래밍 | 1 | 33000.0 | 33000
+소설 | 2 | 13900.0 | 27800
+심리학 | 1 | 15000.0 | 15000
+(총 6개 행 조회됨)

@@ -1,0 +1,15 @@
+쿼리 ID: Bonus_03B
+설명: 보너스 3-2: 카테고리별 자산 가치 및 평균가 (핵심 지표 2)
+SQL:
+SELECT c.category_name, COUNT(b.book_id) AS book_count, SUM(b.price) AS total_asset_price, ROUND(AVG(b.price), 0) AS avg_book_price FROM categories c JOIN books b ON c.category_id = b.category_id GROUP BY c.category_id, c.category_name ORDER BY total_asset_price DESC;
+
+실행 결과:
+category_name | book_count | total_asset_price | avg_book_price
+--------------+------------+-------------------+---------------
+역사 | 2 | 50000 | 25000.0
+자연과학 | 2 | 47000 | 23500.0
+경제/경영 | 2 | 42000 | 21000.0
+IT/프로그래밍 | 1 | 33000 | 33000.0
+소설 | 2 | 27800 | 13900.0
+심리학 | 1 | 15000 | 15000.0
+(총 6개 행 조회됨)

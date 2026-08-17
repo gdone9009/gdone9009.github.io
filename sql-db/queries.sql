@@ -1,8 +1,8 @@
 -- ==============================================================================
--- 📖 [초보자를 위한 교재용 해설] 핵심 SQL 쿼리 16선 + 보너스 3종 상세 해설
+-- 📖 [초보자를 위한 교재용 해설] 핵심 SQL 쿼리 16선 + 고급 기법 (CTE, HAVING) + 보너스 3종
 -- ------------------------------------------------------------------------------
 -- 본 파일은 실무에서 가장 빈번하게 요구되는 기본 조회, 다중 조인, 집계/통계,
--- 서브쿼리, 데이터 변경/삭제, 인덱스 최적화 및 보너스 분석 쿼리를 집대성한 것입니다.
+-- 서브쿼리, 데이터 변경/삭제, 인덱스 최적화, CTE 분해 및 보너스 분석 쿼리를 집대성한 것입니다.
 -- ==============================================================================
 
 PRAGMA foreign_keys = ON;
@@ -60,6 +60,22 @@ INNER JOIN books b ON r.book_id = b.book_id
 INNER JOIN categories c ON b.category_id = c.category_id
 ORDER BY r.rental_date DESC;
 
+-- [Q06-CTE] [고급 CTE 기법] Q06 다중 조인 쿼리의 단계별 분해 (Common Table Expression)
+WITH MemberRentals AS (
+    SELECT r.rental_id, m.name AS member_name, r.book_id, r.rental_date
+    FROM rentals r
+    INNER JOIN members m ON r.member_id = m.member_id
+),
+BookCategories AS (
+    SELECT b.book_id, b.title AS book_title, c.category_name
+    FROM books b
+    INNER JOIN categories c ON b.category_id = c.category_id
+)
+SELECT mr.rental_id, mr.member_name, bc.book_title, bc.category_name, mr.rental_date
+FROM MemberRentals mr
+INNER JOIN BookCategories bc ON mr.book_id = bc.book_id
+ORDER BY mr.rental_date DESC;
+
 -- [Q07] [INNER JOIN + WHERE] 'IT/프로그래밍' 카테고리에 속한 도서의 제목, 저자, 가격 조회
 -- 작성 목적: 조인된 결과 셋에서 특정 비즈니스 조건을 걸어 데이터를 추출하는 필터링 실습
 SELECT b.title, b.author, b.price, c.category_name
@@ -83,7 +99,7 @@ ORDER BY m.member_id;
 
 
 -- ==============================================================================
--- 3. 집계 및 통계 3개 (COUNT, SUM, AVG + GROUP BY)
+-- 3. 집계 및 통계 3개 (COUNT, SUM, AVG + GROUP BY + HAVING)
 -- ==============================================================================
 
 -- [Q10] [COUNT + GROUP BY] 카테고리별 등록된 보유 도서 수량 집계
@@ -92,6 +108,14 @@ SELECT c.category_name, COUNT(b.book_id) AS total_books
 FROM categories c
 LEFT JOIN books b ON c.category_id = b.category_id
 GROUP BY c.category_id, c.category_name
+ORDER BY total_books DESC;
+
+-- [Q10-HAVING] [HAVING절 집계 필터링] 보유 도서가 2권 이상인 카테고리만 필터링
+SELECT c.category_name, COUNT(b.book_id) AS total_books, SUM(b.price) AS total_value
+FROM categories c
+JOIN books b ON c.category_id = b.category_id
+GROUP BY c.category_id, c.category_name
+HAVING COUNT(b.book_id) >= 2
 ORDER BY total_books DESC;
 
 -- [Q11] [COUNT + GROUP BY + LIMIT] 회원별 총 대출 횟수 집계 및 최다 대출 회원(대출왕) TOP 3
@@ -170,15 +194,10 @@ SELECT title, author
 FROM books 
 WHERE category_id = (SELECT category_id FROM categories WHERE category_name = 'IT/프로그래밍');
 
--- 💡 [비교 분석]:
--- 1. 가독성(Readability): 서브쿼리는 조건절에 단일 ID를 치환하므로 직관적이지만, JOIN은 관계형 데이터의 물리적 결합을 명확히 명시합니다.
--- 2. 성능(Performance): 실무 대용량 DB 환경에서는 쿼리 최적화기(Optimizer)가 JOIN을 인덱스 스캔과 병렬 처리로 최적화하므로 복잡한 쿼리일수록 JOIN이 유리합니다.
-
 -- [보너스 2] 외래키(FK) 참조 무결성 제약조건 위반 에러 유도 및 복구 시연
 -- 실행 의도: 부모 테이블(members)에 존재하지 않는 회원 ID(999번)로 대여 기록(rentals) 삽입 시도
 -- 주석 해제 후 실행 시: 'FOREIGN KEY constraint failed' 에러 발생으로 데이터베이스 오염 원천 차단
 -- INSERT INTO rentals (member_id, book_id, rental_date) VALUES (999, 1, '2026-08-01');
--- 💡 [해결 방안]: 부모 테이블인 members에 999번 회원을 먼저 INSERT하거나, 유효한 member_id(1~10)를 참조하여 입력해야 무결성이 유지됩니다.
 
 -- [보너스 3] 미니 리포트 - 도서관 시스템 핵심 경영/운영 지표 3선
 -- 지표 1: 가장 인기 있는 대여 도서 TOP 3 (도서별 대여 빈도 집계)

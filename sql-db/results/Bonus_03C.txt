@@ -1,0 +1,10 @@
+쿼리 ID: Bonus_03C
+설명: 보너스 3-3: 회원 대여 서비스 참여율 (핵심 지표 3)
+SQL:
+SELECT COUNT(DISTINCT r.member_id) AS active_members, (SELECT COUNT(*) FROM members) AS total_members, ROUND(CAST(COUNT(DISTINCT r.member_id) AS FLOAT) / (SELECT COUNT(*) FROM members) * 100, 1) || '%' AS participation_rate FROM rentals r;
+
+실행 결과:
+active_members | total_members | participation_rate
+---------------+---------------+-------------------
+9 | 10 | 90.0%
+(총 1개 행 조회됨)

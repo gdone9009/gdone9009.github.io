@@ -1,0 +1,21 @@
+쿼리 ID: Q06
+설명: 대여 상세 이력 조회 (INNER JOIN 3개 테이블)
+SQL:
+SELECT r.rental_id, m.name AS member_name, b.title AS book_title, c.category_name, r.rental_date FROM rentals r INNER JOIN members m ON r.member_id = m.member_id INNER JOIN books b ON r.book_id = b.book_id INNER JOIN categories c ON b.category_id = c.category_id ORDER BY r.rental_date DESC;
+
+실행 결과:
+rental_id | member_name | book_title | category_name | rental_date
+----------+-------------+------------+---------------+------------
+12 | 김철수 | 이기적 유전자 | 자연과학 | 2026-07-05
+11 | 강동원 | 총 균 쇠 | 역사 | 2026-07-01
+10 | 한결 | 부자 아빠 가난한 아빠 | 경제/경영 | 2026-06-28
+9 | 조예은 | 클린 코드 | IT/프로그래밍 | 2026-06-25
+8 | 윤서준 | 미움받을 용기 | 심리학 | 2026-06-22
+7 | 강하늘 | 데미안 | 소설 | 2026-06-20
+6 | 최지우 | 코스모스 | 자연과학 | 2026-06-18
+5 | 박민수 | 사피엔스 | 역사 | 2026-06-15
+4 | 이영희 | 파친코 | 소설 | 2026-06-12
+3 | 김철수 | 클린 코드 | IT/프로그래밍 | 2026-06-10
+2 | 강동원 | 부자 아빠 가난한 아빠 | 경제/경영 | 2026-06-05
+1 | 강동원 | 클린 코드 | IT/프로그래밍 | 2026-06-01
+(총 12개 행 조회됨)

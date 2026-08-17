@@ -1,0 +1,7 @@
+쿼리 ID: Q15
+설명: 대여 이력이 없는 미대여 임시 테스트 도서 삭제 (DELETE)
+SQL:
+DELETE FROM books WHERE title = '임시 테스트 책' AND book_id NOT IN (SELECT book_id FROM rentals);
+
+실행 결과:
+성공적으로 실행됨 (영향을 받은 행 수: 0)

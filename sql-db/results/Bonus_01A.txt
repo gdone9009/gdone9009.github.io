@@ -1,0 +1,10 @@
+쿼리 ID: Bonus_01A
+설명: 보너스 1-A: JOIN 방식으로 IT/프로그래밍 도서 조회
+SQL:
+SELECT b.title, b.author FROM books b JOIN categories c ON b.category_id = c.category_id WHERE c.category_name = 'IT/프로그래밍';
+
+실행 결과:
+title | author
+------+-------
+클린 코드 | 로버트 마틴
+(총 1개 행 조회됨)

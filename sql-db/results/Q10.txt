@@ -1,0 +1,19 @@
+쿼리 ID: Q10
+설명: 카테고리별 등록된 도서 수량 집계 (COUNT + GROUP BY)
+SQL:
+SELECT c.category_name, COUNT(b.book_id) AS total_books FROM categories c LEFT JOIN books b ON c.category_id = b.category_id GROUP BY c.category_id, c.category_name ORDER BY total_books DESC;
+
+실행 결과:
+category_name | total_books
+--------------+------------
+소설 | 2
+경제/경영 | 2
+역사 | 2
+자연과학 | 2
+IT/프로그래밍 | 1
+심리학 | 1
+철학 | 0
+예술/대중문화 | 0
+에세이 | 0
+자기계발 | 0
+(총 10개 행 조회됨)

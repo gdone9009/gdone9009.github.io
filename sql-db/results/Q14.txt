@@ -1,0 +1,7 @@
+쿼리 ID: Q14
+설명: '강동원' 회원의 연락처 정보 수정 (UPDATE)
+SQL:
+UPDATE members SET phone = '010-9999-8888' WHERE name = '강동원';
+
+실행 결과:
+성공적으로 실행됨 (영향을 받은 행 수: 1)

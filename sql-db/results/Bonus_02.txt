@@ -1,0 +1,4 @@
+[Bonus_02] 외래 키(FK) 제약 조건 무결성 검증 에러 시도
+SQL: INSERT INTO rentals (member_id, book_id, rental_date) VALUES (999, 1, '2026-08-01');
+결과: 예상대로 에러 발생하여 억제됨: FOREIGN KEY constraint failed
+해결 방법: members 테이블에 member_id가 999인 부모 회원을 먼저 생성하거나, 존재하는 member_id를 입력해야 참조 무결성이 보장됩니다.
